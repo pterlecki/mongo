@@ -1,0 +1,17 @@
+# -*- mode: python -*-
+
+Import('env')
+
+env = env.Clone()
+
+env.Prepend(CPPPATH=[
+    'include',
+    'windows',
+])
+
+env.Library(
+    target="simdjson",
+    source= [
+        "src/simdjson.cpp",
+    ],
+)

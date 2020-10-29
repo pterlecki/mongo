@@ -1,0 +1,65 @@
+# -*- mode: python -*-
+
+Import('env')
+
+env = env.Clone()
+
+env.Prepend(CPPPATH=[
+    'CommonCrypto',
+])
+
+env.Library(
+    target="CommonCrypto",
+    source= [
+        "Source/API/CommonBigNum.c",
+        "Source/API/CommonCMAC.c",
+        "Source/API/CommonCryptoAESShoefly.c",
+        "Source/API/CommonCryptoCASTShoefly.c",
+        "Source/API/CommonCryptor.c",
+        "Source/API/CommonDH.c",
+        "Source/API/CommonDigest.c",
+        "Source/API/CommonECCryptor.c",
+        "Source/API/CommonGCMCryptor.c",
+        "Source/API/CommonHMAC.c",
+        "Source/API/CommonKeyDerivation.c",
+        "Source/API/CommonRandom.c",
+        "Source/API/CommonRSACryptor.c",
+        "Source/API/CommonSymmetricKeywrap.c",
+        "Source/ccUtilities/byteBuffer.c",
+        "Source/ccUtilities/ccdebug.c",
+        "Source/descriptors/corecryptoSymmetricBridge.c",
+        "Source/descriptors/digestDescriptors/ccvngneonsha1Descriptor/ccvngneonsha1Desc.c",
+        "Source/descriptors/digestDescriptors/ltc_md2_descriptor/ltc_md2.c",
+        "Source/descriptors/digestDescriptors/ltc_md4_descriptor/ltc_md4.c",
+        "Source/descriptors/digestDescriptors/ltc_md5_descriptor/ltc_md5.c",
+        "Source/descriptors/digestDescriptors/ltc_md5_descriptor/ltc_md5/ltc_md5.c",
+        "Source/descriptors/digestDescriptors/ltc_rmd_descriptor/ltc_rmd128.c",
+        "Source/descriptors/digestDescriptors/ltc_rmd_descriptor/ltc_rmd160.c",
+        "Source/descriptors/digestDescriptors/ltc_rmd_descriptor/ltc_rmd256.c",
+        "Source/descriptors/digestDescriptors/ltc_rmd_descriptor/ltc_rmd320.c",
+        "Source/descriptors/digestDescriptors/ltc_sha1_descriptor/ltc_sha1.c",
+        "Source/descriptors/digestDescriptors/ltc_sha2_descriptor/ltc_sha224.c",
+        "Source/descriptors/digestDescriptors/ltc_sha2_descriptor/ltc_sha256.c",
+        "Source/descriptors/digestDescriptors/ltc_sha2_descriptor/ltc_sha384.c",
+        "Source/descriptors/digestDescriptors/ltc_sha2_descriptor/ltc_sha512.c",
+        "Source/descriptors/digestDescriptors/vng_neon_sha1_descriptor/vng_neon_sha1.c",
+        "Source/descriptors/digestDescriptors/vng_neon_sha2_descriptor/vng_neon_sha224.c",
+        "Source/descriptors/digestDescriptors/vng_neon_sha2_descriptor/vng_neon_sha256.c",
+        "Source/descriptors/digestDescriptors/vng_x86_sha1_descriptor/vng_x86_sha1.c",
+        "Source/descriptors/digestDescriptors/vng_x86_sha2_descriptor/vng_x86_sha224.c",
+        "Source/descriptors/digestDescriptors/vng_x86_sha2_descriptor/vng_x86_sha256.c",
+        "Source/libDER/libDER/DER_CertCrl.c",
+        "Source/libDER/libDER/DER_Decode.c",
+        "Source/libDER/libDER/DER_Digest.c",
+        "Source/libDER/libDER/DER_Encode.c",
+        "Source/libDER/libDER/DER_Keys.c",
+        "Source/libDER/libDER/oids.c",
+        "Source/libDER/libDERUtils/fileIo.c",
+        "Source/libDER/libDERUtils/libDERUtils.c",
+        "Source/libDER/libDERUtils/printFields.c",
+        "Source/libDER/Tests/DER_Ticket.c",
+        "Source/libDER/Tests/parseCert.c",
+        "Source/libDER/Tests/parseCrl.c",
+        "Source/libDER/Tests/parseTicket.c",
+    ],
+)

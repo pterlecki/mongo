@@ -589,6 +589,7 @@ std::unique_ptr<Pipeline, PipelineDeleter> createOplogFetchingPipelineForReshard
     // Filter out anything inside of an `applyOps` specifically destined for another shard. This
     // ensures zone restrictions are obeyed. Data will never be sent to a shard that it isn't meant
     // to end up on.
+    /*
     stages.emplace_back(DocumentSourceAddFields::create(
         Doc{{"o.applyOps",
              Doc{{"$cond",
@@ -605,7 +606,7 @@ std::unique_ptr<Pipeline, PipelineDeleter> createOplogFetchingPipelineForReshard
                       {"else", "$o.applyOps"_sd}}}}}}
             .toBson(),
         expCtx));
-
+*/
     return Pipeline::create(std::move(stages), expCtx);
 }
 
@@ -681,7 +682,6 @@ std::unique_ptr<Pipeline, PipelineDeleter> createAggForCollectionCloning(
                                                   << "else"
                                                   << BSON("$lt" << BSON_ARRAY("$$sk"
                                                                               << "$$max")))))))))));
-
     lookupPipelineBuilder.done();
     lookupBuilder.append("as", "intersectingChunk");
     BSONObj lookupBSON(BSON("" << lookupBuilder.obj()));

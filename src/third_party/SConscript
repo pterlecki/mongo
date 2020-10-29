@@ -188,6 +188,36 @@ if not use_system_version_of_library('kms-message'):
         'CPPDEFINES' :['KMS_MSG_STATIC']
     }
 
+#if not use_system_version_of_library('simdjson'):
+    thirdPartyEnvironmentModifications['simdjson'] = {
+        'CPPPATH' : ['#/src/third_party/simdjson/include'],
+    }
+
+#if not use_system_version_of_library('aws-c-common'):
+    thirdPartyEnvironmentModifications['aws-c-common'] = {
+        'CPPPATH' : ['#/src/third_party/aws-c-common/include'],
+    }
+
+#if not use_system_version_of_library('aws-checksums'):
+    thirdPartyEnvironmentModifications['aws-checksums'] = {
+        'CPPPATH' : ['#/src/third_party/aws-checksums/include'],
+    }
+
+#if not use_system_version_of_library('aws-c-event-stream'):
+    thirdPartyEnvironmentModifications['aws-c-event-stream'] = {
+        'CPPPATH' : ['#/src/third_party/aws-c-event-stream/include'],
+    }
+
+#if not use_system_version_of_library('CommonCrypto'):
+    thirdPartyEnvironmentModifications['CommonCrypto'] = {
+        'CPPPATH' : ['#/src/third_party/CommonCrypto/CommonCrypto'],
+    }
+
+#if not use_system_version_of_library('aws-sdk-core'):
+    thirdPartyEnvironmentModifications['aws-sdk'] = {
+        'CPPPATH' : ['#/src/third_party/aws-sdk/include'],
+    }
+
 if use_system_libunwind:
     thirdPartyEnvironmentModifications['unwind'] = {
         'SYSLIBDEPS_PRIVATE' : [env['LIBDEPS_UNWIND_SYSLIBDEP'], 'lzma'],
@@ -717,3 +747,92 @@ if get_option('ssl') == 'on':
             'shim_kms_message.cpp',
         ])
 
+simdjsonEnv = env.Clone()
+simdjsonEnv.SConscript('simdjson/SConscript', exports={'env' : simdjsonEnv })
+simdjsonEnv = simdjsonEnv.Clone(
+    LIBDEPS_INTERFACE=[
+        'simdjson/simdjson',
+    ]
+)
+
+simdjsonEnv.Library(
+    target="shim_simdjson",
+    source=[
+        'shim_simdjson.cpp',
+    ]
+)
+
+awsCCommonEnv = env.Clone()
+awsCCommonEnv.SConscript('aws-c-common/SConscript', exports={'env' : awsCCommonEnv })
+awsCCommonEnv = awsCCommonEnv.Clone(
+    LIBDEPS_INTERFACE=[
+        'aws-c-common/aws-c-common',
+    ]
+)
+
+awsCCommonEnv.Library(
+    target="shim_aws_c_common",
+    source=[
+        'shim_aws_c_common.cpp',
+    ]
+)
+
+awsChecksumsEnv = env.Clone()
+awsChecksumsEnv.SConscript('aws-checksums/SConscript', exports={'env' : awsChecksumsEnv })
+awsChecksumsEnv = awsChecksumsEnv.Clone(
+    LIBDEPS_INTERFACE=[
+        'aws-checksums/aws-checksums',
+    ]
+)
+
+awsChecksumsEnv.Library(
+    target="shim_aws_checksums",
+    source=[
+        'shim_aws_checksums.cpp',
+    ]
+)
+
+awsCEventStreamEnv = env.Clone()
+awsCEventStreamEnv.SConscript('aws-c-event-stream/SConscript', exports={'env' : awsCEventStreamEnv })
+awsCEventStreamEnv = awsCEventStreamEnv.Clone(
+    LIBDEPS_INTERFACE=[
+        'aws-c-event-stream/aws-c-event-stream',
+    ]
+)
+
+awsCEventStreamEnv.Library(
+    target="shim_aws_c_event_stream",
+    source=[
+        'shim_aws_c_event_stream.cpp',
+    ]
+)
+
+commonCryptoEnv = env.Clone()
+commonCryptoEnv.SConscript('CommonCrypto/SConscript', exports={'env' : commonCryptoEnv })
+commonCryptoEnv = commonCryptoEnv.Clone(
+    LIBDEPS_INTERFACE=[
+        'CommonCrypto/CommonCrypto',
+    ]
+)
+
+commonCryptoEnv.Library(
+    target="shim_common_crypto",
+    source=[
+        'shim_common_crypto.cpp',
+    ]
+)
+
+#awsSdkCoreEnv = env.Clone()
+#awsSdkCoreEnv.SConscript('aws-sdk-core/SConscript', exports={'env' : awsSdkCoreEnv })
+#awsSdkCoreEnv = awsSdkCoreEnv.Clone(
+#    LIBDEPS_INTERFACE=[
+#        'aws-sdk-core/aws-sdk-core',
+#    ]
+#)
+
+#awsSdkCoreEnv.Library(
+#    target="shim_aws_sdk_core",
+#    source=[
+#        'shim_aws_sdk_core.cpp',
+#    ]
+#)

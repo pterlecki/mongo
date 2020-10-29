@@ -195,7 +195,7 @@ env.Library(
 )
 
 pipelineEnv = env.Clone()
-pipelineEnv.InjectThirdParty(libraries=['snappy'])
+pipelineEnv.InjectThirdParty(libraries=['simdjson','snappy'])
 pipelineEnv.Library(
     target='pipeline',
     source=[
@@ -209,6 +209,7 @@ pipelineEnv.Library(
         'document_source_change_stream_transform.cpp',
         'document_source_check_invalidate.cpp',
         'document_source_check_resume_token.cpp',
+        'document_source_collection.cpp',
         'document_source_coll_stats.cpp',
         'document_source_count.cpp',
         'document_source_current_op.cpp',
@@ -284,6 +285,7 @@ pipelineEnv.Library(
         '$BUILD_DIR/mongo/db/update/update_document_diff',
         '$BUILD_DIR/mongo/db/views/resolved_view',
         '$BUILD_DIR/mongo/s/is_mongos',
+        '$BUILD_DIR/third_party/shim_simdjson',
         '$BUILD_DIR/third_party/shim_snappy',
         'accumulator',
         'dependencies',
@@ -296,7 +298,20 @@ pipelineEnv.Library(
         '$BUILD_DIR/mongo/db/commands/test_commands_enabled',
         '$BUILD_DIR/mongo/db/sorter/sorter_idl',
         '$BUILD_DIR/mongo/rpc/command_status',
-    ]
+    ],
+    SYSLIBDEPS=[
+#        'c:/users/user/lib/aws/lib/aws-c-common',
+#        'c:/users/user/lib/aws/lib/aws-c-event-stream',
+#        'c:/users/user/lib/aws/lib/aws-checksums',
+#        'c:/users/user/lib/aws/lib/aws-cpp-sdk-core',
+#        'c:/users/user/lib/aws/lib/aws-cpp-sdk-s3',
+        'aws-c-common',
+        'aws-c-event-stream',
+        'aws-checksums',
+        'aws-cpp-sdk-core',
+        'aws-cpp-sdk-s3',
+        'aws-cpp-sdk-transfer',
+    ],
 )
 
 env.Library(

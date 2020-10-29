@@ -1,0 +1,25 @@
+# -*- mode: python -*-
+
+Import('env')
+
+env = env.Clone()
+
+env.Prepend(CPPPATH=[
+    'include',
+])
+
+env.InjectThirdParty(libraries=['aws-c-common'])
+env.Library(
+    target="aws-checksums",
+    source= [
+        "source/crc.c",
+        "source/crc_sw.c",
+        "source/arm/crc32c_arm.c",
+        "source/generic/crc32c_null.c",
+        "source/intel/asm/crc32c_sse42_asm.c",
+        "source/intel/visualc/visualc_crc32c_sse42.c",
+    ],
+    LIBDEPS=[
+        '$BUILD_DIR/third_party/shim_aws_c_common',
+    ],
+)
