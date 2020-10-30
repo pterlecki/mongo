@@ -36,6 +36,7 @@
 #include "mongo/db/stats/top.h"
 #include "mongo/util/net/socket_utils.h"
 #include "mongo/util/time_support.h"
+#include "mongo/util/timer.h"
 
 #include <algorithm>
 #include <execution>
@@ -43,13 +44,8 @@
 #include <fstream>
 #include <boost/filesystem.hpp>
 
-#define USE_IMPORT_EXPORT
-#undef GetObject
-#undef GetMessage
-
 #include <aws/core/Aws.h>
 #include <aws/core/auth/AWSCredentials.h>
-#include <aws/s3/S3Client.h>
 #include <aws/s3/model/GetObjectRequest.h>
 #include <aws/s3/model/HeadObjectRequest.h>
 #include <aws/transfer/TransferHandle.h>
@@ -101,7 +97,7 @@ intrusive_ptr<DocumentSource> DocumentSourceCollection::createFromBson(
                                     << " of type " << typeName(elem.type()),
                         elem.type() == BSONType::String);
             } else {
-                uassert(40168, str::stream() << "unrecognized option to $collection: " << fieldName, "region" == fieldName || "threads" == fieldName);
+                uassert(40168, str::stream() << "unrecognized option to $collection: " << fieldName, "region" == fieldName || "threads" == fieldName || "keyId" == fieldName || "secretKey" == fieldName);
             }
         }
         // TODO: verify that the right fields are specified together
@@ -215,6 +211,7 @@ DocumentSource::GetNextResult DocumentSourceCollection::doGetNext() {
             if (_jsonFileIterator == nullptr) {
                 auto path = _collectionSpec["path"].str();
                 if (path.substr(0,2) == "s3") {
+                    auto initTimer = Timer();
                     auto bucketEndIndex = path.find('/', 5);
                     std::string bucket = path.substr(5, bucketEndIndex - 5);
                     std::string key = path.substr(bucketEndIndex + 1);
@@ -226,14 +223,16 @@ DocumentSource::GetNextResult DocumentSourceCollection::doGetNext() {
                     Aws::Client::ClientConfiguration clientConfig;
                     clientConfig.region = region;
                     Aws::Auth::AWSCredentials credentials(
-                        "AKIA5FJBTVTSN4MMFD5M",
-                        "guTIsoKKGvktwsCxGykvLh/dfrwjTFX1dy6F2Efg");
-                    auto s3Client = std::make_shared<Aws::S3::S3Client>(credentials, clientConfig);
+                        _collectionSpec["keyId"].str().c_str(),
+                        _collectionSpec["secretKey"].str().c_str());
+                    _s3Client = std::make_shared<Aws::S3::S3Client>(credentials, clientConfig);
+                    std::cout << "SDK init: " << initTimer.elapsed() << std::endl;
 
                     if (dop > 1) {
+                        auto downloadTimer = Timer();
                         Aws::S3::Model::HeadObjectRequest headObj;
                         headObj.WithBucket(bucket.c_str()).WithKey(key.c_str());
-                        auto outcome = s3Client->HeadObject(headObj);
+                        auto outcome = _s3Client->HeadObject(headObj);
                         if (!outcome.IsSuccess()) {
                             uassert(40167, str::stream() << "Failed to load an s3 object. Bucket: "
                                 << bucket << " Key: " << key << " Error: " << outcome.GetError().GetMessage().c_str(), false);
@@ -254,10 +253,12 @@ DocumentSource::GetNextResult DocumentSourceCollection::doGetNext() {
                             parts.begin(),
                             parts.end(),
                             [&](auto&& item) {
-                                downloadFile(s3Client, bucket, key, item);
+                                downloadFile(_s3Client, bucket, key, item);
                             }
                         );
+                        std::cout << "Download: " << downloadTimer.elapsed() << std::endl;
 
+                        auto fileConcatTimer = Timer();
                         path = parts[0].path;
                         std::ofstream outMain;
                         outMain.open(path, std::ios::binary | std::ios::app);
@@ -267,19 +268,23 @@ DocumentSource::GetNextResult DocumentSourceCollection::doGetNext() {
                             outMain << inPart.rdbuf();
                         }
                         outMain.close();
-
+                        std::cout << "File contact: " << fileConcatTimer.elapsed() << std::endl;
                     } else {
+                        auto downloadTimer = Timer();
                         DownloadPart part = {-1, -1, "", ""};
-                        auto result = downloadFile(s3Client, bucket, key, part);
+                        auto result = downloadFile(_s3Client, bucket, key, part);
                         if (!result) {
                             Aws::ShutdownAPI(options);
                             uassert(40167, str::stream() << "Failed to load an s3 object. Bucket: "
                                 << bucket << " Key: " << key << " Error: " << part.error, false);
                         }
                         path = part.path;
+                    std::cout << "Download: " << downloadTimer.elapsed() << std::endl;
                     }
 
+                    auto shutdownTimer = Timer();
                     Aws::ShutdownAPI(options);
+                    std::cout << "Shutdown: " << shutdownTimer.elapsed() << std::endl;
                 }
 
                 try {

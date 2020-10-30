@@ -33,6 +33,11 @@
 
 #include <simdjson.h>
 
+#define USE_IMPORT_EXPORT
+#undef GetObject
+#undef GetMessage
+#include <aws/s3/S3Client.h>
+
 namespace mongo {
 
 /**
@@ -77,6 +82,7 @@ public:
         _collectionType = CollectionType::constant;
         _dataArrayIterator = nullptr;
         _jsonFileIterator = nullptr;
+        _s3Client = nullptr;
     }
 
     const char* getSourceName() const final;
@@ -115,6 +121,7 @@ private:
     simdjson::dom::parser _jsonParser;
     simdjson::dom::document_stream _jsonFileStream;
     std::unique_ptr<simdjson::dom::document_stream::iterator> _jsonFileIterator;
+    std::shared_ptr<Aws::S3::S3Client> _s3Client;
 };
 
 }  // namespace mongo
